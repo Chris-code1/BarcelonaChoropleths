@@ -2,6 +2,9 @@
 
 Important Links:
 
+Open Data from City of Barcelona:
+
+https://opendata-ajuntament.barcelona.cat/data/es/dataset
 
 Geomap of Barcelona with different sizing options:
 
