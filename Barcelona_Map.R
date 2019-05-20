@@ -2,6 +2,7 @@
 
 # load necessary packages
 library( geojsonio )
+library(leaflet)
 
 # transfrom .json file into a spatial polygons data frame
 states <- 
