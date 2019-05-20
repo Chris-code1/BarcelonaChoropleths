@@ -18,3 +18,7 @@ https://www.kaggle.com/xvivancos/discovering-barcelona-part-ii
 Choreoleaflets:
 
 https://rstudio.github.io/leaflet/choropleths.html
+
+Tutorial Leaflet library in R:
+
+https://rstudio.github.io/leaflet/map_widget.html
