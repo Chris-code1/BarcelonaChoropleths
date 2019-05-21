@@ -3,11 +3,14 @@
 # load necessary packages
 library( geojsonio )
 library(leaflet)
+library(shiny)
 
 #load in Data
 unemployment <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv", sep=",")
 
 str(unemployment)
+
+
 
 
 # transfrom .json file into a spatial polygons data frame
@@ -22,12 +25,10 @@ geojson_bracelona <-
 class( geojson_bracelona )
 names(geojson_bracelona)
 
-# Code to call a specific element in the list
-#geojson_bracelona $ N_Barri
 
 
-bins <- c(0, 5.000, 10.000, 15.000, 20.000, 25.000, 30.000, 35.000, Inf)
-pal <- colorBin("YlOrRd", domain = unemployment$Població.16.64.anys, bins = bins)
+bins <- c(0, 5, 10, 15, 20, 25, 30, 35, 40, Inf)
+pal <- colorBin("YlOrRd", domain = unemployment$Gener, bins = bins)
 
 
 #Create the basic map with districts
@@ -42,7 +43,7 @@ m <- leaflet(geojson_bracelona) %>%
 #Create variable for the labels, shown when hovering over the different Neighbourhoods
 labels <- sprintf(
   "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Name of District: </strong> %g",
-  geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, unemployment$Població.16.64.anys
+  geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, unemployment$Gener
 ) %>% lapply(htmltools::HTML)
 
 
@@ -51,7 +52,7 @@ labels <- sprintf(
 m %>% addPolygons(  
   
   #fill of tiles depending on bins and population density
-  fillColor = ~pal(unemployment$Població.16.64.anys),
+  fillColor = ~pal(as.numeric(unemployment$Gener)),
   
   #creates the dashed line in between the districts
   
