@@ -35,7 +35,6 @@ data = as.numeric(as.character(sub("," , ".",unemployment$Gener)))
 #Create the basic map with districts
 
 m <- leaflet(geojson_bracelona) %>%
-  #setView(-96, 37.8, 4) %>%
   addProviderTiles("MapBox", options = providerTileOptions(
     id = "mapbox.light",
     accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN')))
