@@ -2,6 +2,8 @@
 library( geojsonio )
 library(leaflet)
 library(plotly)
+library(tidyr)
+
 
 #load in Data
 unemployment <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv", sep=",")
@@ -106,3 +108,27 @@ barplot <- plot_ly(barplotdata,
 barplot
 
 ##################################Linechart##########################################
+
+
+# Create Df to calculate mean
+
+linechartdf <- data.frame(cbind(as.numeric(as.character(sub("," , ".",unemployment$Gener))),as.numeric(as.character(sub("," , ".",unemployment$Febrer))),as.numeric(as.character(sub("," , ".",unemployment$Març))),as.numeric(as.character(sub("," , ".",unemployment$Abril))),as.numeric(as.character(sub("," , ".",unemployment$Maig))),as.numeric(as.character(sub("," , ".",unemployment$Juny))),as.numeric(as.character(sub("," , ".",unemployment$Juliol))),as.numeric(as.character(sub("," , ".",unemployment$Agost))),as.numeric(as.character(sub("," , ".",unemployment$Setembre))),as.numeric(as.character(sub("," , ".",unemployment$Octubre))),as.numeric(as.character(sub("," , ".",unemployment$Novembre))),as.numeric(as.character(sub("," , ".",unemployment$Desembre)))))
+
+data_long <- gather(linechartdf, factor_key=TRUE)
+
+# Calculate mean
+meanunemployment <- data_long %>% group_by(key) %>% summarise(mean = mean(value))
+
+# Add array with month names
+
+month <- c('January', 'February', 'March', 'April', 'May', 'June', 'July',
+           'August', 'September', 'October', 'November', 'December')
+
+meanunemployment$month <- month
+
+#The default order will be alphabetized unless specified as below:
+meanunemployment$month <- factor(meanunemployment$month, levels = meanunemployment[["month"]])
+
+p <- plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines')
+
+p
