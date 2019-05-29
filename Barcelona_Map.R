@@ -1,6 +1,7 @@
 # load necessary packages
 library( geojsonio )
 library(leaflet)
+library(plotly)
 
 #load in Data
 unemployment <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv", sep=",")
@@ -24,9 +25,10 @@ names(geojson_bracelona)
 #geojson_bracelona $ N_Barri
 
 
-bins <- c(0, 5.000, 10.000, 15.000, 20.000, 25.000, 30.000, 35.000, Inf)
-pal <- colorBin("YlOrRd", domain = unemployment$Població.16.64.anys, bins = bins)
+bins <- c(0, 4, 8, 12, 15, Inf)
+pal <- colorBin("YlOrRd", domain = unemployment$Gener, bins = bins)
 
+data = as.numeric(as.character(sub("," , ".",unemployment$Gener)))
 
 #Create the basic map with districts
 
@@ -39,8 +41,8 @@ m <- leaflet(geojson_bracelona) %>%
 
 #Create variable for the labels, shown when hovering over the different Neighbourhoods
 labels <- sprintf(
-  "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Name of District: </strong> %g",
-  geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, unemployment$Població.16.64.anys
+  "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Number of unemployed: </strong> %g",
+  geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
 ) %>% lapply(htmltools::HTML)
 
 
@@ -49,7 +51,7 @@ labels <- sprintf(
 m %>% addPolygons(  
   
   #fill of tiles depending on bins and population density
-  fillColor = ~pal(unemployment$Població.16.64.anys),
+  fillColor = ~pal(data),
   
   #creates the dashed line in between the districts
   
@@ -75,6 +77,32 @@ m %>% addPolygons(
     textsize = "15px",
     direction = "auto")) %>%
   
+  #adds the legend in the right hand corner
   
-  addLegend(pal = pal, values = unemployment$Població.16.64.anys, opacity = 0.7, title = NULL,
+  addLegend(pal = pal, values = unemployment$Gener, opacity = 0.7, title = NULL,
             position = "bottomright")
+
+
+##################################Barchart##########################################
+
+## create Dataframe for the barchart
+
+barplotdata <- data.frame(unemployment$Barris, data, stringAsFactors = FALSE)
+
+#sort the dataframe by unemployment rate
+
+barplotdata$unemployment.Barris <- factor(barplotdata$unemployment.Barris, levels = unique(barplotdata$unemployment.Barris)[order(barplotdata$data, decreasing = TRUE)])
+
+#create the plot
+
+barplot <- plot_ly(barplotdata,
+                   x = ~data,
+                   y = ~unemployment.Barris,
+                   type = "bar",
+                   name = "unemployment rate") %>%
+  
+            layout(yaxis = list(title = 'Neighbourhood'), xaxis = list(title = 'Amount of unemployed in percent'))
+  
+barplot
+
+##################################Linechart##########################################
