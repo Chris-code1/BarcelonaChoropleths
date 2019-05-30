@@ -1,14 +1,26 @@
+#set working directory
+setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
+
 # load necessary packages
 library( geojsonio )
 library(leaflet)
 library(plotly)
 library(tidyr)
+library(RColorBrewer)
 
+
+unemployment_2012 <- read.csv("Data/Barcelona_unemployment/2012_unemployment.csv", sep=",")
+unemployment_2016 <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv", sep=",")
+
+data_2012 = as.numeric(as.character(sub("," , ".",unemployment_2015$Gener)))
+data_2016 = as.numeric(as.character(sub("," , ".",unemployment_2016$Gener)))
+
+data <- data_2016 - data_2012
 
 #load in Data
-unemployment <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv", sep=",")
+#unemployment <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv", sep=",")
 
-str(unemployment)
+str(data)
 
 
 # transfrom .json file into a spatial polygons data frame
@@ -27,10 +39,10 @@ names(geojson_bracelona)
 #geojson_bracelona $ N_Barri
 
 
-bins <- c(0, 4, 8, 12, 15, Inf)
-pal <- colorBin("YlOrRd", domain = unemployment$Gener, bins = bins)
+bins <- c( -2, -1.5, -1, -0.5,  0, 0.5, 1, 1.5, 2)
+pal <- colorBin("BrBG", domain = data, bins = bins)
 
-data = as.numeric(as.character(sub("," , ".",unemployment$Gener)))
+
 
 #Create the basic map with districts
 
@@ -80,7 +92,7 @@ m %>% addPolygons(
   
   #adds the legend in the right hand corner
   
-  addLegend(pal = pal, values = unemployment$Gener, opacity = 0.7, title = NULL,
+  addLegend(pal = pal, values = data, opacity = 0.7, title = NULL,
             position = "bottomright")
 
 
