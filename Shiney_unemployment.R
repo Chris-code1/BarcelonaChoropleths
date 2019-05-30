@@ -10,11 +10,13 @@ library(shiny)
 
 
 #load in Data
-unemployment <- read.csv("Data/Barcelona_unemployment/2012_unemployment.csv", sep=",")
-#unemployment_2013 <- read.csv("Data/Barcelona_unemployment/2013_unemployment.csv", sep=",")
-#unemployment_2014 <- read.csv("Data/Barcelona_unemployment/2014_unemployment.csv", sep=",")
-#unemployment_2015 <- read.csv("Data/Barcelona_unemployment/2015_unemployment.csv", sep=",")
+unemployment_2012 <- read.csv("Data/Barcelona_unemployment/2012_unemployment.csv", sep=",")
+unemployment_2013 <- read.csv("Data/Barcelona_unemployment/2013_unemployment.csv", sep=",")
+unemployment_2014 <- read.csv("Data/Barcelona_unemployment/2014_unemployment.csv", sep=",")
+unemployment_2015 <- read.csv("Data/Barcelona_unemployment/2015_unemployment.csv", sep=",")
 unemployment_2016 <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv", sep=",")
+
+unemployment <- unemployment_2012
 
 str(unemployment)
 
@@ -37,7 +39,7 @@ data_start = as.numeric(as.character(sub("," , ".",unemployment$Gener)))
 print(data)
 
 # Code to call a specific element in the list
-bins <- c(0, 4, 8, 12, 16, Inf)
+bins <- c(0, 3, 6, 9, 12, 15, 18, Inf)
 pal <- colorBin("YlOrRd", domain = data_start, bins = bins)
 
 
@@ -89,7 +91,7 @@ ui <- bootstrapPage(
                                         "December"),
                             selected = "January"),
                 
-                selectInput("var", 
+                selectInput("var_year", 
                             label = "Choose a year",
                             choices = c("2012", 
                                         "2013",
@@ -109,12 +111,12 @@ server <- function(input, output, session) {
   
   output$m <- renderLeaflet({
     
-    #unemployment <- switch(input$var, 
-     #                     "2012" = unemployment_2012,
-      #                    "2013" = unemployment_2013,
-       #                   "2014" = unemployment_2014,
-        #                  "2015" = unemployment_2015,
-         #                 "2016" = unemployment_2016)
+    unemployment <- switch(input$var_year, 
+                         "2012" = unemployment_2012,
+                          "2013" = unemployment_2013,
+                          "2014" = unemployment_2014,
+                          "2015" = unemployment_2015,
+                          "2016" = unemployment_2016)
     
     
     
@@ -136,6 +138,14 @@ server <- function(input, output, session) {
 
     
     data = as.numeric(as.character(sub("," , ".",switch_month)))
+    
+    #Create variable for the labels, shown when hovering over the different Neighbourhoods
+    labels <- sprintf(
+      "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Number of unemployed: </strong> %g",
+      geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
+    ) %>% lapply(htmltools::HTML)
+    
+    print("LOG: loading of labels done")
     
     
     
@@ -182,7 +192,10 @@ server <- function(input, output, session) {
       addLegend(pal = pal, values = unemployment$Gener, opacity = 0.7, title = NULL,
                 position = "bottomright")
     
-    })}
+  })
+  
+  
+  }
       
 
 shinyApp(ui, server)
