@@ -104,7 +104,8 @@ ui <- bootstrapPage(
                                         "2016"),
                             selected = "2012"),
                 
-                plotlyOutput(outputId = "histCentile", height = 250)
+                plotlyOutput(outputId = "histCentile", height = 250),
+                plotlyOutput(outputId = "barCentile", height = 250)
 
   )
 )
@@ -115,11 +116,63 @@ ui <- bootstrapPage(
 
 server <- function(input, output, session) {
   
+  
+  #########Bar Chart
+  
+  output$barCentile <- renderPlotly({
+    
+    unemployment <- switch(input$var_year, 
+                           "2012" = unemployment_2012,
+                           "2013" = unemployment_2013,
+                           "2014" = unemployment_2014,
+                           "2015" = unemployment_2015,
+                           "2016" = unemployment_2016)
+    
+    
+    
+    switch_month <- switch(input$var, 
+                           "January" = unemployment$Gener,
+                           "February" = unemployment$Febrer,
+                           "March" = unemployment$Agost,
+                           "April" = unemployment$Abril,
+                           "May" = unemployment$Maig,
+                           "June" = unemployment$Juny,
+                           "July" = unemployment$Juliol,
+                           "August" = unemployment$Agost,
+                           "September" = unemployment$Setembre,
+                           "October" = unemployment$Octubre,
+                           "November" = unemployment$Novembre,
+                           "December" = unemployment$Desembre)
+    
+    
+    
+    
+    data = as.numeric(as.character(sub("," , ".",switch_month)))
+    
+    ## create Dataframe for the barchart
+    
+    barplotdata <- data.frame(unemployment$Barris, data, stringAsFactors = FALSE)
+    
+    #sort the dataframe by unemployment rate
+    
+    barplotdata$unemployment.Barris <- factor(barplotdata$unemployment.Barris, levels = unique(barplotdata$unemployment.Barris)[order(barplotdata$data, decreasing = TRUE)])
+    
+    #create the plot
+    
+    barplot <- plot_ly(barplotdata,
+                       x = ~data,
+                       y = ~unemployment.Barris,
+                       type = "bar",
+                       name = "unemployment rate") %>%
+      
+      layout(yaxis = list(title = 'Neighbourhood'), xaxis = list(title = 'Amount of unemployed in percent'))
+    
+  })
+  
   #########Line Chart
   
   #Graph with unemployment in average
   
-  ####################Linechart stuff
   
   output$histCentile <- renderPlotly({
     
