@@ -128,6 +128,9 @@ meanunemployment$month <- month
 #The default order will be alphabetized unless specified as below:
 meanunemployment$month <- factor(meanunemployment$month, levels = meanunemployment[["month"]])
 
-p <- plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines')
+p <- plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines') %>%
+layout(title = "Barcelona unemployed",
+       yaxis = list(title = 'Unemployed in Percent'), 
+       xaxis = list(title = 'Month'))
 
 p

@@ -59,6 +59,13 @@ m <- leaflet(geojson_bracelona) %>%
     id = "mapbox.light",
     accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN')))
 
+print("LOG: m created")
+
+
+
+
+
+
 
 print("LOG: loading of variables done")
 
@@ -71,9 +78,6 @@ ui <- bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
   leafletOutput("m", width = "100%", height = "100%"),
   absolutePanel(top = 10, right = 10,
-                sliderInput("range", "Magnitudes", min(data_start), max(data_start),
-                            value = range(data_start), step = 0.1
-                ),
                 
                 selectInput("var", 
                             label = "Choose a month",
@@ -98,7 +102,9 @@ ui <- bootstrapPage(
                                         "2014", 
                                         "2015",
                                         "2016"),
-                            selected = "2012")
+                            selected = "2012"),
+                
+                plotlyOutput(outputId = "histCentile", height = 250)
 
   )
 )
@@ -108,6 +114,49 @@ ui <- bootstrapPage(
 
 
 server <- function(input, output, session) {
+  
+  #########Line Chart
+  
+  #Graph with unemployment in average
+  
+  ####################Linechart stuff
+  
+  output$histCentile <- renderPlotly({
+    
+    
+    unemployment <- switch(input$var_year, 
+                           "2012" = unemployment_2012,
+                           "2013" = unemployment_2013,
+                           "2014" = unemployment_2014,
+                           "2015" = unemployment_2015,
+                           "2016" = unemployment_2016)
+
+    # Create Df to calculate mean
+    
+    linechartdf <- data.frame(cbind(as.numeric(as.character(sub("," , ".",unemployment$Gener))),as.numeric(as.character(sub("," , ".",unemployment$Febrer))),as.numeric(as.character(sub("," , ".",unemployment$Febrer))),as.numeric(as.character(sub("," , ".",unemployment$Abril))),as.numeric(as.character(sub("," , ".",unemployment$Maig))),as.numeric(as.character(sub("," , ".",unemployment$Juny))),as.numeric(as.character(sub("," , ".",unemployment$Juliol))),as.numeric(as.character(sub("," , ".",unemployment$Agost))),as.numeric(as.character(sub("," , ".",unemployment$Setembre))),as.numeric(as.character(sub("," , ".",unemployment$Octubre))),as.numeric(as.character(sub("," , ".",unemployment$Novembre))),as.numeric(as.character(sub("," , ".",unemployment$Desembre)))))
+    
+    data_long <- gather(linechartdf, factor_key=TRUE)
+    
+    # Calculate mean
+    meanunemployment <- data_long %>% group_by(key) %>% summarise(mean = mean(value))
+    
+    # Add array with month names
+    
+    month <- c('January', 'February', 'March', 'April', 'May', 'June', 'July',
+               'August', 'September', 'October', 'November', 'December')
+    
+    meanunemployment$month <- month
+    
+    #The default order will be alphabetized unless specified as below:
+    meanunemployment$month <- factor(meanunemployment$month, levels = meanunemployment[["month"]])
+    
+    plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines') %>%
+      layout(title = "Barcelona unemployed",
+             yaxis = list(title = 'Unemployed in %'), 
+             xaxis = list(title = 'Month'))
+  })
+  
+  ################Map################
   
   output$m <- renderLeaflet({
     
