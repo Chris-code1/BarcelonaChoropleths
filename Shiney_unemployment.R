@@ -10,11 +10,13 @@ library(shiny)
 
 
 #load in Data
-unemployment <- read.csv("Data/Barcelona_unemployment/2012_unemployment.csv", sep=",")
-#unemployment_2013 <- read.csv("Data/Barcelona_unemployment/2013_unemployment.csv", sep=",")
-#unemployment_2014 <- read.csv("Data/Barcelona_unemployment/2014_unemployment.csv", sep=",")
-#unemployment_2015 <- read.csv("Data/Barcelona_unemployment/2015_unemployment.csv", sep=",")
+unemployment_2012 <- read.csv("Data/Barcelona_unemployment/2012_unemployment.csv", sep=",")
+unemployment_2013 <- read.csv("Data/Barcelona_unemployment/2013_unemployment.csv", sep=",")
+unemployment_2014 <- read.csv("Data/Barcelona_unemployment/2014_unemployment.csv", sep=",")
+unemployment_2015 <- read.csv("Data/Barcelona_unemployment/2015_unemployment.csv", sep=",")
 unemployment_2016 <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv", sep=",")
+
+unemployment <- unemployment_2012
 
 str(unemployment)
 
@@ -37,7 +39,7 @@ data_start = as.numeric(as.character(sub("," , ".",unemployment$Gener)))
 print(data)
 
 # Code to call a specific element in the list
-bins <- c(0, 4, 8, 12, 16, Inf)
+bins <- c(0, 3, 6, 9, 12, 15, 18, Inf)
 pal <- colorBin("YlOrRd", domain = data_start, bins = bins)
 
 
@@ -57,6 +59,13 @@ m <- leaflet(geojson_bracelona) %>%
     id = "mapbox.light",
     accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN')))
 
+print("LOG: m created")
+
+
+
+
+
+
 
 print("LOG: loading of variables done")
 
@@ -69,9 +78,6 @@ ui <- bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
   leafletOutput("m", width = "100%", height = "100%"),
   absolutePanel(top = 10, right = 10,
-                sliderInput("range", "Magnitudes", min(data_start), max(data_start),
-                            value = range(data_start), step = 0.1
-                ),
                 
                 selectInput("var", 
                             label = "Choose a month",
@@ -89,14 +95,16 @@ ui <- bootstrapPage(
                                         "December"),
                             selected = "January"),
                 
-                selectInput("var", 
+                selectInput("var_year", 
                             label = "Choose a year",
                             choices = c("2012", 
                                         "2013",
                                         "2014", 
                                         "2015",
                                         "2016"),
-                            selected = "2012")
+                            selected = "2012"),
+                
+                plotlyOutput(outputId = "histCentile", height = 250)
 
   )
 )
@@ -107,14 +115,57 @@ ui <- bootstrapPage(
 
 server <- function(input, output, session) {
   
+  #########Line Chart
+  
+  #Graph with unemployment in average
+  
+  ####################Linechart stuff
+  
+  output$histCentile <- renderPlotly({
+    
+    
+    unemployment <- switch(input$var_year, 
+                           "2012" = unemployment_2012,
+                           "2013" = unemployment_2013,
+                           "2014" = unemployment_2014,
+                           "2015" = unemployment_2015,
+                           "2016" = unemployment_2016)
+
+    # Create Df to calculate mean
+    
+    linechartdf <- data.frame(cbind(as.numeric(as.character(sub("," , ".",unemployment$Gener))),as.numeric(as.character(sub("," , ".",unemployment$Febrer))),as.numeric(as.character(sub("," , ".",unemployment$Febrer))),as.numeric(as.character(sub("," , ".",unemployment$Abril))),as.numeric(as.character(sub("," , ".",unemployment$Maig))),as.numeric(as.character(sub("," , ".",unemployment$Juny))),as.numeric(as.character(sub("," , ".",unemployment$Juliol))),as.numeric(as.character(sub("," , ".",unemployment$Agost))),as.numeric(as.character(sub("," , ".",unemployment$Setembre))),as.numeric(as.character(sub("," , ".",unemployment$Octubre))),as.numeric(as.character(sub("," , ".",unemployment$Novembre))),as.numeric(as.character(sub("," , ".",unemployment$Desembre)))))
+    
+    data_long <- gather(linechartdf, factor_key=TRUE)
+    
+    # Calculate mean
+    meanunemployment <- data_long %>% group_by(key) %>% summarise(mean = mean(value))
+    
+    # Add array with month names
+    
+    month <- c('January', 'February', 'March', 'April', 'May', 'June', 'July',
+               'August', 'September', 'October', 'November', 'December')
+    
+    meanunemployment$month <- month
+    
+    #The default order will be alphabetized unless specified as below:
+    meanunemployment$month <- factor(meanunemployment$month, levels = meanunemployment[["month"]])
+    
+    plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines') %>%
+      layout(title = "Barcelona unemployed",
+             yaxis = list(title = 'Unemployed in %'), 
+             xaxis = list(title = 'Month'))
+  })
+  
+  ################Map################
+  
   output$m <- renderLeaflet({
     
-    #unemployment <- switch(input$var, 
-     #                     "2012" = unemployment_2012,
-      #                    "2013" = unemployment_2013,
-       #                   "2014" = unemployment_2014,
-        #                  "2015" = unemployment_2015,
-         #                 "2016" = unemployment_2016)
+    unemployment <- switch(input$var_year, 
+                         "2012" = unemployment_2012,
+                          "2013" = unemployment_2013,
+                          "2014" = unemployment_2014,
+                          "2015" = unemployment_2015,
+                          "2016" = unemployment_2016)
     
     
     
@@ -136,6 +187,14 @@ server <- function(input, output, session) {
 
     
     data = as.numeric(as.character(sub("," , ".",switch_month)))
+    
+    #Create variable for the labels, shown when hovering over the different Neighbourhoods
+    labels <- sprintf(
+      "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Number of unemployed: </strong> %g",
+      geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
+    ) %>% lapply(htmltools::HTML)
+    
+    print("LOG: loading of labels done")
     
     
     
@@ -182,7 +241,10 @@ server <- function(input, output, session) {
       addLegend(pal = pal, values = unemployment$Gener, opacity = 0.7, title = NULL,
                 position = "bottomright")
     
-    })}
+  })
+  
+  
+  }
       
 
 shinyApp(ui, server)
