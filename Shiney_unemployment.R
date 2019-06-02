@@ -1,13 +1,15 @@
 #set working directory
-setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
+#setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
 
 # load necessary packages
-library( geojsonio )
+library(geojsonio)
 library(leaflet)
 library(plotly)
 library(tidyr)
 library(shiny)
-
+library(knitr)
+library(scales)
+library(shinydashboard)
 
 #load in Data
 unemployment_2012 <- read.csv("Data/Barcelona_unemployment/2012_unemployment.csv", sep=",")
@@ -19,6 +21,16 @@ unemployment_2016 <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv
 unemployment <- unemployment_2012
 
 str(unemployment)
+
+population_2012 <- read_csv("Data/Barcelona_ population/2012_padro_edat_any_a_any_per_sexe.csv")
+population_2013 <- read_csv("Data/Barcelona_ population/2013_padro_edat_any_a_any_per_sexe.csv")
+population_2014 <- read_csv("Data/Barcelona_ population/2014_padro_edat_any_a_any_per_sexe.csv")
+population_2015 <- read_csv("Data/Barcelona_ population/2015_padro_edat_any_a_any_per_sexe.csv")
+population_2016 <- read_csv("Data/Barcelona_ population/2016_padro_edat_any_a_any_per_sexe.csv")
+
+population <- population_2012
+
+str(population)
 
 ################Map data##################
 
@@ -74,10 +86,36 @@ print("LOG: loading of variables done")
 ##################################Shiny##########################################
 
 
-ui <- bootstrapPage(
-  tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
-  leafletOutput("m", width = "100%", height = "100%"),
-  absolutePanel(top = 10, right = 10,
+# ui <- bootstrapPage(
+#   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
+#   leafletOutput("m", width = "100%", height = "100%"),
+#   absolutePanel(top = 10, right = 10,
+ui <- dashboardPage(
+  dashboardHeader(title = "Barcelona"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Unemployement", tabName = "unemployement", icon = icon("dashboard")),
+      menuItem("Air Quality", tabName = "AirQuality", icon = icon("dashboard"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      # First tab content
+      tabItem(tabName = "unemployement",
+      fluidRow(
+       box(title = "Unemployement per year", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+         plotlyOutput(outputId = "histCentile", height = 230)),
+       box(title = "Gender ratio per district", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+         plotlyOutput(outputId = "barPopulation", height = 230)),
+       box(title = "Select Year and/or Month", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                selectInput("var_year", 
+                            label = "Choose a year",
+                            choices = c("2012", 
+                                        "2013",
+                                        "2014", 
+                                        "2015",
+                                        "2016"),
+                            selected = "2012"),
                 
                 selectInput("var", 
                             label = "Choose a month",
@@ -93,44 +131,64 @@ ui <- bootstrapPage(
                                         "October", 
                                         "November",
                                         "December"),
-                            selected = "January"),
-                
-                selectInput("var_year", 
-                            label = "Choose a year",
-                            choices = c("2012", 
-                                        "2013",
-                                        "2014", 
-                                        "2015",
-                                        "2016"),
-                            selected = "2012"),
-                
-                plotlyOutput(outputId = "histCentile", height = 250),
-                plotlyOutput(outputId = "barCentile", height = 250)
-
+                            selected = "January"))
+     ),
+     fluidRow(
+     box(title = "Map of Barcelona", width = 12, height = 800, solidHeader = TRUE, collapsible = TRUE, status = "danger",
+       leafletOutput(outputId = "m", height = 700)
+       )
+     )
+      ),
+     
+     # Second tab content
+     tabItem(tabName = "AirQuality",
+             h2("Widgets tab content")
+     )
+    )
   )
 )
 
 
-
-
-
 server <- function(input, output, session) {
   
+  #########Bar Chart 1
+  output$barPopulation <- renderPlotly({
+    
+    population <- switch(input$var_year, 
+                           "2012" = population_2012,
+                           "2013" = population_2013,
+                           "2014" = population_2014,
+                           "2015" = population_2015,
+                           "2016" = population_2016)
+    
+    # Population by year
+    population %>%
+      filter(Codi_Barri==input$m_shape_click$id) %>%
+      group_by(Sexe) %>%
+      summarise(count=sum(Nombre)) %>%
+      mutate(percent=paste0(round((count/sum(count))*100, 2), "%")) %>%
+      ggplot(aes(x="Barri", y=count)) +
+      geom_bar(stat="identity", aes(fill=Sexe)) +
+      geom_text(aes(label=percent, group=Sexe), position=position_stack(vjust=0.5)) +
+      scale_y_continuous(labels=comma) +
+      labs(x="Barri", y="Population", title=paste("Year",input$var_year)) +
+      theme_bw()
+  })
   
-  #########Bar Chart
+  #########Bar Chart 2
   
   output$barCentile <- renderPlotly({
-    
-    unemployment <- switch(input$var_year, 
+
+    unemployment <- switch(input$var_year,
                            "2012" = unemployment_2012,
                            "2013" = unemployment_2013,
                            "2014" = unemployment_2014,
                            "2015" = unemployment_2015,
                            "2016" = unemployment_2016)
-    
-    
-    
-    switch_month <- switch(input$var, 
+
+
+
+    switch_month <- switch(input$var,
                            "January" = unemployment$Gener,
                            "February" = unemployment$Febrer,
                            "March" = unemployment$Agost,
@@ -143,30 +201,30 @@ server <- function(input, output, session) {
                            "October" = unemployment$Octubre,
                            "November" = unemployment$Novembre,
                            "December" = unemployment$Desembre)
-    
-    
-    
-    
+
+
+
+
     data = as.numeric(as.character(sub("," , ".",switch_month)))
-    
+
     ## create Dataframe for the barchart
-    
+
     barplotdata <- data.frame(unemployment$Barris, data, stringAsFactors = FALSE)
-    
+
     #sort the dataframe by unemployment rate
-    
+
     barplotdata$unemployment.Barris <- factor(barplotdata$unemployment.Barris, levels = unique(barplotdata$unemployment.Barris)[order(barplotdata$data, decreasing = TRUE)])
-    
+
     #create the plot
-    
+
     barplot <- plot_ly(barplotdata,
                        x = ~data,
                        y = ~unemployment.Barris,
                        type = "bar",
                        name = "unemployment rate") %>%
-      
+
       layout(yaxis = list(title = 'Neighbourhood'), xaxis = list(title = 'Amount of unemployed in percent'))
-    
+
   })
   
   #########Line Chart
@@ -204,7 +262,7 @@ server <- function(input, output, session) {
     meanunemployment$month <- factor(meanunemployment$month, levels = meanunemployment[["month"]])
     
     plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines') %>%
-      layout(title = "Barcelona unemployed",
+      layout(title = input$var_year,
              yaxis = list(title = 'Unemployed in %'), 
              xaxis = list(title = 'Month'))
   })
@@ -212,6 +270,15 @@ server <- function(input, output, session) {
   ################Map################
   
   output$m <- renderLeaflet({
+    
+    # popup1 <- paste0("<span style='color: #7f0000'><strong>18-25 year olds 2000</strong></span>",
+    #                  "<br><span style='color: salmon;'><strong>District: </strong></span>",
+    #                  unemployment$Barris,
+    #                  "<br><span style='color: salmon;'><strong>relative amount: </strong></span>",
+    #                  unemployment$Barris
+    #                  ,"<br><span style='color: salmon;'><strong>absolute amount: </strong></span>",
+    #                  unemployment$Barris
+    # )
     
     unemployment <- switch(input$var_year, 
                          "2012" = unemployment_2012,
@@ -261,6 +328,12 @@ server <- function(input, output, session) {
         id = "mapbox.light",
         accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN')))
     
+    #Create click listener
+    observeEvent(input$m_shape_click,{
+      print("LOG: clicked!")
+      print(input$m_shape_click$id)
+    })
+    
     m %>% addPolygons(  
       #fill of tiles depending on bins and population density
       fillColor = ~pal(data),
@@ -272,6 +345,8 @@ server <- function(input, output, session) {
       color = "white",
       dashArray = "3",
       fillOpacity = 0.7,
+      #popup = popup1,
+      layerId = unemployment$Codi_Barri,
       
       #defines the properties of the highlightingline when hovering over the different neighbourhoods
       highlight = highlightOptions(
@@ -293,7 +368,7 @@ server <- function(input, output, session) {
       
       addLegend(pal = pal, values = unemployment$Gener, opacity = 0.7, title = NULL,
                 position = "bottomright")
-    
+  
   })
   
   
