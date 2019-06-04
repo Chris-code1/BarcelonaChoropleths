@@ -290,13 +290,13 @@ server <- function(input, output, session) {
     
     # Calculate mean
     meanunemployment <- data_long %>% group_by(key) %>% summarise(mean = mean(value))
-    meanunemployment_comp <- data_long_comp %>% group_by(key) %>% summarise(mean = mean(value))
+    meanunemployment_comp <- data_long_comp %>% group_by(key) %>% summarise(mean_comp = mean(value))
     
     #subtract one from another to get the comparison
     
-    mean = as.numeric(as.character(sub("," , ".",meanunemployment$mean))) - as.numeric(as.character(sub("," , ".",meanunemployment_comp$mean)))
+    #mean = as.numeric(as.character(sub("," , ".",meanunemployment$mean))) - as.numeric(as.character(sub("," , ".",meanunemployment_comp$mean)))
     
-    meanunemployment_sub_df <- data.frame(meanunemployment_sub)
+    #meanunemployment_sub_df <- data.frame(mean)
     
     
     # Add array with month names
@@ -304,13 +304,22 @@ server <- function(input, output, session) {
     month <- c('January', 'February', 'March', 'April', 'May', 'June', 'July',
                'August', 'September', 'October', 'November', 'December')
     
-    meanunemployment_sub_df$month <- month
     
+    
+    meanunemployment = merge(meanunemployment, meanunemployment_comp, by.x="key", by.y="key")
+    
+    meanunemployment$month <- month
+
     #The default order will be alphabetized unless specified as below:
-    meanunemployment_sub_df$month <- factor(meanunemployment_sub_df$month, levels = meanunemployment_sub_df[["month"]])
+    meanunemployment$month <- factor(meanunemployment$month, levels = meanunemployment[["month"]])
     
-    plot_ly(meanunemployment_sub_df, x = ~month, y = ~mean, type = 'scatter', mode = 'lines') %>%
-      layout(title = paste(input$var_year, "-", input$var_year_comp),
+    print(meanunemployment)
+    
+    plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines+markers', name = input$var_year) %>%
+        add_trace(y = ~mean_comp, name = input$var_year_comp, mode = 'lines+markers') %>%
+      
+      
+      layout(title = paste("Mean unemployment of Barcelona"),
              yaxis = list(title = 'Unemployed in %'), 
              xaxis = list(title = 'Month'))
   })
@@ -446,7 +455,7 @@ server <- function(input, output, session) {
       #adds the legend in the right hand corner
       
       addLegend(pal = pal, values = unemployment$Gener, opacity = 0.7, title = NULL,
-                position = "bottomright")
+                position = "topright")
   
   })
   
