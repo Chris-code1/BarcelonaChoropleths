@@ -1,5 +1,5 @@
 #set working directory
-setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
+#setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
 
 # load necessary packages
 library(geojsonio)
@@ -53,7 +53,7 @@ bins <- c(0, 3, 6, 9, 12, 15, 18, Inf)
 
 #create object m 
 
-m <- leaflet(geojson_bracelona) %>%
+m2<- leaflet(geojson_bracelona) %>%
   addProviderTiles("MapBox", options = providerTileOptions(
     id = "mapbox.light",
     accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN')))
@@ -81,76 +81,76 @@ ui <- dashboardPage(
   dashboardBody(
     tabItems(
       # First tab content
-      tabItem(tabName = "unemployment",
-      fluidRow(
-       box(title = "Unemployement per year", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
-         plotlyOutput(outputId = "histCentile", height = 230)),
-       box(title = "Gender ratio per district", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
-         plotlyOutput(outputId = "barPopulation", height = 230)),
-       box(title = "Select Year and/or Month", width = 4,height = 350, solidHeader = TRUE, collapsible = TRUE, status = "primary",
-                selectInput("var_year", 
-                            label = "Choose the year of interest",
-                            choices = c("2012", 
-                                        "2013",
-                                        "2014", 
-                                        "2015",
-                                        "2016"),
-                            selected = "2016"),
-                
-                selectInput("var", 
-                            label = "Choose the month of interest",
-                            choices = c("January", 
-                                        "February",
-                                        "March", 
-                                        "April",
-                                        "May", 
-                                        "June", 
-                                        "July", 
-                                        "August",
-                                        "September", 
-                                        "October", 
-                                        "November",
-                                        "December"),
-                            selected = "January"),
-       
-       #Stuff to be compared with
-       
-                 selectInput("var_year_comp", 
-                             label = "Choose the year to compare with",
-                             choices = c("2012", 
-                                         "2013",
-                                         "2014", 
-                                         "2015",
-                                         "2016"),
-                             selected = "2012"),
-                 
-                 selectInput("var_month_comp", 
-                             label = "Choose the month to compare with",
-                             choices = c("January", 
-                                         "February",
-                                         "March", 
-                                         "April",
-                                         "May", 
-                                         "June", 
-                                         "July", 
-                                         "August",
-                                         "September", 
-                                         "October", 
-                                         "November",
-                                         "December"),
-                             selected = "January"))
-     ),
-     fluidRow(
-     box(title = "Map of Barcelona", width = 12, height = 800, solidHeader = TRUE, collapsible = TRUE, status = "danger",
-       leafletOutput(outputId = "m", height = 700)
-       )
-     )
+      tabItem(tabName = "unemployment_comparison",
+              fluidRow(
+                box(title = "Unemployement per year", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                    plotlyOutput(outputId = "histCentile2", height = 230)),
+                box(title = "Gender ratio per district", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                    plotlyOutput(outputId = "barPopulation2", height = 230)),
+                box(title = "Select Year and/or Month", width = 4,height = 350, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                    selectInput("var_year2", 
+                                label = "Choose the year of interest",
+                                choices = c("2012", 
+                                            "2013",
+                                            "2014", 
+                                            "2015",
+                                            "2016"),
+                                selected = "2016"),
+                    
+                    selectInput("var2", 
+                                label = "Choose the month of interest",
+                                choices = c("January", 
+                                            "February",
+                                            "March", 
+                                            "April",
+                                            "May", 
+                                            "June", 
+                                            "July", 
+                                            "August",
+                                            "September", 
+                                            "October", 
+                                            "November",
+                                            "December"),
+                                selected = "January"),
+                    
+                    #Stuff to be compared with
+                    
+                    selectInput("var_year_comp", 
+                                label = "Choose the year to compare with",
+                                choices = c("2012", 
+                                            "2013",
+                                            "2014", 
+                                            "2015",
+                                            "2016"),
+                                selected = "2012"),
+                    
+                    selectInput("var_month_comp", 
+                                label = "Choose the month to compare with",
+                                choices = c("January", 
+                                            "February",
+                                            "March", 
+                                            "April",
+                                            "May", 
+                                            "June", 
+                                            "July", 
+                                            "August",
+                                            "September", 
+                                            "October", 
+                                            "November",
+                                            "December"),
+                                selected = "January"))
+              ),
+              fluidRow(
+                box(title = "Map of Barcelona", width = 12, height = 800, solidHeader = TRUE, collapsible = TRUE, status = "danger",
+                    leafletOutput(outputId = "m2", height = 700)
+                )
+              )
       ),
-     
-     # Second tab content
-     tabItem(tabName = "AirQuality",
-             h2("Widgets tab content")
-     )
+      
+      # Second tab content
+      tabItem(tabName = "unemployment_comparison",
+              h2("Comparison of unemployment")
+      )
     )
   )
 )
@@ -159,9 +159,9 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   
   #########Bar Chart 1
-  output$barPopulation <- renderPlotly({
+  output$barPopulation2 <- renderPlotly({
     
-    population <- switch(input$var_year, 
+    population <- switch(input$var_year2, 
                            "2012" = population_2012,
                            "2013" = population_2013,
                            "2014" = population_2014,
@@ -170,7 +170,7 @@ server <- function(input, output, session) {
     
     # Population by year
     population %>%
-      filter(Codi_Barri==input$m_shape_click$id) %>%
+      filter(Codi_Barri==input$m2_shape_click$id) %>%
       group_by(Sexe) %>%
       summarise(count=sum(Nombre)) %>%
       mutate(percent=paste0(round((count/sum(count))*100, 2), "%")) %>%
@@ -178,7 +178,7 @@ server <- function(input, output, session) {
       geom_bar(stat="identity", aes(fill=Sexe)) +
       geom_text(aes(label=percent, group=Sexe), position=position_stack(vjust=0.5)) +
       scale_y_continuous(labels=comma) +
-      labs(x="Barri", y="Population", title=paste("Year",input$var_year)) +
+      labs(x="Barri", y="Population", title=paste("Year",input$var_year2)) +
       theme_bw()
   })
   
@@ -186,7 +186,7 @@ server <- function(input, output, session) {
   
   output$barCentile <- renderPlotly({
 
-    unemployment <- switch(input$var_year,
+    unemployment <- switch(input$var_year2,
                            "2012" = unemployment_2012,
                            "2013" = unemployment_2013,
                            "2014" = unemployment_2014,
@@ -195,7 +195,7 @@ server <- function(input, output, session) {
 
 
 
-    switch_month <- switch(input$var,
+    switch_month <- switch(input$var2,
                            "January" = unemployment$Gener,
                            "February" = unemployment$Febrer,
                            "March" = unemployment$Gener,
@@ -239,10 +239,10 @@ server <- function(input, output, session) {
   #Graph with unemployment in average
   
   
-  output$histCentile <- renderPlotly({
+  output$histCentile2 <- renderPlotly({
     
     
-    unemployment <- switch(input$var_year, 
+    unemployment <- switch(input$var_year2, 
                            "2012" = unemployment_2012,
                            "2013" = unemployment_2013,
                            "2014" = unemployment_2014,
@@ -315,7 +315,7 @@ server <- function(input, output, session) {
     
     print(meanunemployment)
     
-    plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines+markers', name = input$var_year) %>%
+    plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines+markers', name = input$var_year2) %>%
         add_trace(y = ~mean_comp, name = input$var_year_comp, mode = 'lines+markers') %>%
       
       
@@ -326,7 +326,7 @@ server <- function(input, output, session) {
   
   ################Map################
   
-  output$m <- renderLeaflet({
+  output$m2<- renderLeaflet({
     
     # Sets the bins
     bins <- c( -Inf , -2.5, -2, -1.5, -1, -0.5,  0, 0.5, 1, 1.5, 2)
@@ -334,7 +334,7 @@ server <- function(input, output, session) {
     
     #sets the year
     
-    unemployment_high <- switch(input$var_year, 
+    unemployment_high <- switch(input$var_year2, 
                          "2012" = unemployment_2012,
                           "2013" = unemployment_2013,
                           "2014" = unemployment_2014,
@@ -343,7 +343,7 @@ server <- function(input, output, session) {
     
     #sets the month, based on the year selected
     
-    switch_month_high <- switch(input$var, 
+    switch_month_high <- switch(input$var2, 
                    "January" = unemployment_high$Gener,
                    "February" = unemployment_high$Febrer,
                    "March" = unemployment_high$Agost,
@@ -422,7 +422,7 @@ server <- function(input, output, session) {
       print(input$m_shape_click$id)
     })
     
-    m %>% addPolygons(  
+    m2%>% addPolygons(  
       #fill of tiles depending on bins and population density
       fillColor = ~pal(data),
       
