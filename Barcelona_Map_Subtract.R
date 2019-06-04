@@ -120,27 +120,66 @@ barplot
 
 ##################################Linechart##########################################
 
+unemployment = unemployment_2016
+
+
+unemployment_comp = unemployment_2012
 
 # Create Df to calculate mean
 
-linechartdf <- data.frame(cbind(as.numeric(as.character(sub("," , ".",unemployment$Gener))),as.numeric(as.character(sub("," , ".",unemployment$Febrer))),as.numeric(as.character(sub("," , ".",unemployment$Març))),as.numeric(as.character(sub("," , ".",unemployment$Abril))),as.numeric(as.character(sub("," , ".",unemployment$Maig))),as.numeric(as.character(sub("," , ".",unemployment$Juny))),as.numeric(as.character(sub("," , ".",unemployment$Juliol))),as.numeric(as.character(sub("," , ".",unemployment$Agost))),as.numeric(as.character(sub("," , ".",unemployment$Setembre))),as.numeric(as.character(sub("," , ".",unemployment$Octubre))),as.numeric(as.character(sub("," , ".",unemployment$Novembre))),as.numeric(as.character(sub("," , ".",unemployment$Desembre)))))
+linechartdf <- data.frame(cbind(as.numeric(as.character(sub("," , ".",unemployment$Gener))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Febrer))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Febrer))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Abril))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Maig))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Juny))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Juliol))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Agost))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Setembre))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Octubre))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Novembre))),
+                                as.numeric(as.character(sub("," , ".",unemployment$Desembre)))))
+
+
+linechartdf_comp <- data.frame(cbind(as.numeric(as.character(sub("," , ".",unemployment_comp$Gener))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Febrer))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Febrer))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Abril))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Maig))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Juny))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Juliol))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Agost))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Setembre))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Octubre))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Novembre))),
+                                     as.numeric(as.character(sub("," , ".",unemployment_comp$Desembre)))))
+
 
 data_long <- gather(linechartdf, factor_key=TRUE)
+data_long_comp <- gather(linechartdf_comp, factor_key=TRUE)
 
 # Calculate mean
 meanunemployment <- data_long %>% group_by(key) %>% summarise(mean = mean(value))
+meanunemployment_comp <- data_long_comp %>% group_by(key) %>% summarise(mean = mean(value))
+
+#subtract one from another to get the comparison
+
+mean = as.numeric(as.character(sub("," , ".",meanunemployment$mean))) - as.numeric(as.character(sub("," , ".",meanunemployment_comp$mean)))
+
+meanunemployment_sub_df <- data.frame(meanunemployment_sub)
+
 
 # Add array with month names
 
 month <- c('January', 'February', 'March', 'April', 'May', 'June', 'July',
            'August', 'September', 'October', 'November', 'December')
 
-meanunemployment$month <- month
+meanunemployment_sub_df$month <- month
 
 #The default order will be alphabetized unless specified as below:
-meanunemployment$month <- factor(meanunemployment$month, levels = meanunemployment[["month"]])
+meanunemployment_sub_df$month <- factor(meanunemployment_sub_df$month, levels = meanunemployment_sub_df[["month"]])
 
-p <- plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines') %>%
+p <- plot_ly(meanunemployment_sub_df, x = ~month, y = ~mean, type = 'scatter', mode = 'lines') %>%
 layout(title = "Barcelona unemployed",
        yaxis = list(title = 'Unemployed in Percent'), 
        xaxis = list(title = 'Month'))

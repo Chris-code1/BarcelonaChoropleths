@@ -87,18 +87,18 @@ ui <- dashboardPage(
          plotlyOutput(outputId = "histCentile", height = 230)),
        box(title = "Gender ratio per district", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
          plotlyOutput(outputId = "barPopulation", height = 230)),
-       box(title = "Select Year and/or Month", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+       box(title = "Select Year and/or Month", width = 4,height = 350, solidHeader = TRUE, collapsible = TRUE, status = "primary",
                 selectInput("var_year", 
-                            label = "Choose a year",
+                            label = "Choose the year of interest",
                             choices = c("2012", 
                                         "2013",
                                         "2014", 
                                         "2015",
                                         "2016"),
-                            selected = "2012"),
+                            selected = "2016"),
                 
                 selectInput("var", 
-                            label = "Choose a month",
+                            label = "Choose the month of interest",
                             choices = c("January", 
                                         "February",
                                         "March", 
@@ -111,7 +111,34 @@ ui <- dashboardPage(
                                         "October", 
                                         "November",
                                         "December"),
-                            selected = "January"))
+                            selected = "January"),
+       
+       #Stuff to be compared with
+       
+                 selectInput("var_year_comp", 
+                             label = "Choose the year to compare with",
+                             choices = c("2012", 
+                                         "2013",
+                                         "2014", 
+                                         "2015",
+                                         "2016"),
+                             selected = "2012"),
+                 
+                 selectInput("var_month_comp", 
+                             label = "Choose the month to compare with",
+                             choices = c("January", 
+                                         "February",
+                                         "March", 
+                                         "April",
+                                         "May", 
+                                         "June", 
+                                         "July", 
+                                         "August",
+                                         "September", 
+                                         "October", 
+                                         "November",
+                                         "December"),
+                             selected = "January"))
      ),
      fluidRow(
      box(title = "Map of Barcelona", width = 12, height = 800, solidHeader = TRUE, collapsible = TRUE, status = "danger",
@@ -121,12 +148,6 @@ ui <- dashboardPage(
       ),
      
      # Second tab content
-     tabItem(tabName = "unemployment_comparison",
-             h2("I am comp")
-     ),
-    
-     
-     # Third tab content
      tabItem(tabName = "AirQuality",
              h2("Widgets tab content")
      )
@@ -177,7 +198,7 @@ server <- function(input, output, session) {
     switch_month <- switch(input$var,
                            "January" = unemployment$Gener,
                            "February" = unemployment$Febrer,
-                           "March" = unemployment$Agost,
+                           "March" = unemployment$Gener,
                            "April" = unemployment$Abril,
                            "May" = unemployment$Maig,
                            "June" = unemployment$Juny,
@@ -227,28 +248,69 @@ server <- function(input, output, session) {
                            "2014" = unemployment_2014,
                            "2015" = unemployment_2015,
                            "2016" = unemployment_2016)
+    
+    unemployment_comp <- switch(input$var_year_comp, 
+                           "2012" = unemployment_2012,
+                           "2013" = unemployment_2013,
+                           "2014" = unemployment_2014,
+                           "2015" = unemployment_2015,
+                           "2016" = unemployment_2016)
 
     # Create Df to calculate mean
     
-    linechartdf <- data.frame(cbind(as.numeric(as.character(sub("," , ".",unemployment$Gener))),as.numeric(as.character(sub("," , ".",unemployment$Febrer))),as.numeric(as.character(sub("," , ".",unemployment$Febrer))),as.numeric(as.character(sub("," , ".",unemployment$Abril))),as.numeric(as.character(sub("," , ".",unemployment$Maig))),as.numeric(as.character(sub("," , ".",unemployment$Juny))),as.numeric(as.character(sub("," , ".",unemployment$Juliol))),as.numeric(as.character(sub("," , ".",unemployment$Agost))),as.numeric(as.character(sub("," , ".",unemployment$Setembre))),as.numeric(as.character(sub("," , ".",unemployment$Octubre))),as.numeric(as.character(sub("," , ".",unemployment$Novembre))),as.numeric(as.character(sub("," , ".",unemployment$Desembre)))))
+    linechartdf <- data.frame(cbind(as.numeric(as.character(sub("," , ".",unemployment$Gener))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Febrer))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Febrer))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Abril))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Maig))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Juny))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Juliol))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Agost))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Setembre))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Octubre))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Novembre))),
+                                    as.numeric(as.character(sub("," , ".",unemployment$Desembre)))))
+  
+    
+    linechartdf_comp <- data.frame(cbind(as.numeric(as.character(sub("," , ".",unemployment_comp$Gener))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Febrer))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Febrer))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Abril))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Maig))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Juny))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Juliol))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Agost))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Setembre))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Octubre))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Novembre))),
+                                          as.numeric(as.character(sub("," , ".",unemployment_comp$Desembre)))))
     
     data_long <- gather(linechartdf, factor_key=TRUE)
+    data_long_comp <- gather(linechartdf_comp, factor_key=TRUE)
     
     # Calculate mean
     meanunemployment <- data_long %>% group_by(key) %>% summarise(mean = mean(value))
+    meanunemployment_comp <- data_long_comp %>% group_by(key) %>% summarise(mean = mean(value))
+    
+    #subtract one from another to get the comparison
+    
+    mean = as.numeric(as.character(sub("," , ".",meanunemployment$mean))) - as.numeric(as.character(sub("," , ".",meanunemployment_comp$mean)))
+    
+    meanunemployment_sub_df <- data.frame(meanunemployment_sub)
+    
     
     # Add array with month names
     
     month <- c('January', 'February', 'March', 'April', 'May', 'June', 'July',
                'August', 'September', 'October', 'November', 'December')
     
-    meanunemployment$month <- month
+    meanunemployment_sub_df$month <- month
     
     #The default order will be alphabetized unless specified as below:
-    meanunemployment$month <- factor(meanunemployment$month, levels = meanunemployment[["month"]])
+    meanunemployment_sub_df$month <- factor(meanunemployment_sub_df$month, levels = meanunemployment_sub_df[["month"]])
     
-    plot_ly(meanunemployment, x = ~month, y = ~mean, type = 'scatter', mode = 'lines') %>%
-      layout(title = input$var_year,
+    plot_ly(meanunemployment_sub_df, x = ~month, y = ~mean, type = 'scatter', mode = 'lines') %>%
+      layout(title = paste(input$var_year, "-", input$var_year_comp),
              yaxis = list(title = 'Unemployed in %'), 
              xaxis = list(title = 'Month'))
   })
@@ -257,35 +319,73 @@ server <- function(input, output, session) {
   
   output$m <- renderLeaflet({
     
-    pal <- colorBin("YlOrRd", domain = data, bins = bins)
+    # Sets the bins
+    bins <- c( -Inf , -2.5, -2, -1.5, -1, -0.5,  0, 0.5, 1, 1.5, 2)
     
-    unemployment <- switch(input$var_year, 
+    
+    #sets the year
+    
+    unemployment_high <- switch(input$var_year, 
                          "2012" = unemployment_2012,
                           "2013" = unemployment_2013,
                           "2014" = unemployment_2014,
                           "2015" = unemployment_2015,
                           "2016" = unemployment_2016)
     
+    #sets the month, based on the year selected
     
+    switch_month_high <- switch(input$var, 
+                   "January" = unemployment_high$Gener,
+                   "February" = unemployment_high$Febrer,
+                   "March" = unemployment_high$Agost,
+                   "April" = unemployment_high$Abril,
+                   "May" = unemployment_high$Maig,
+                   "June" = unemployment_high$Juny,
+                   "July" = unemployment_high$Juliol,
+                   "August" = unemployment_high$Agost,
+                   "September" = unemployment_high$Setembre,
+                   "October" = unemployment_high$Octubre,
+                   "November" = unemployment_high$Novembre,
+                   "December" = unemployment_high$Desembre)
     
-    switch_month <- switch(input$var, 
-                   "January" = unemployment$Gener,
-                   "February" = unemployment$Febrer,
-                   "March" = unemployment$Agost,
-                   "April" = unemployment$Abril,
-                   "May" = unemployment$Maig,
-                   "June" = unemployment$Juny,
-                   "July" = unemployment$Juliol,
-                   "August" = unemployment$Agost,
-                   "September" = unemployment$Setembre,
-                   "October" = unemployment$Octubre,
-                   "November" = unemployment$Novembre,
-                   "December" = unemployment$Desembre)
+    #sets the year
     
+    unemployment_low <- switch(input$var_year_comp, 
+                           "2012" = unemployment_2012,
+                           "2013" = unemployment_2013,
+                           "2014" = unemployment_2014,
+                           "2015" = unemployment_2015,
+                           "2016" = unemployment_2016)
     
+    #sets the month, based on the year selected
+    
+    switch_month_low <- switch(input$var_month_comp, 
+                           "January" = unemployment_low$Gener,
+                           "February" = unemployment_low$Febrer,
+                           "March" = unemployment_low$Gener,
+                           "April" = unemployment_low$Abril,
+                           "May" = unemployment_low$Maig,
+                           "June" = unemployment_low$Juny,
+                           "July" = unemployment_low$Juliol,
+                           "August" = unemployment_low$Agost,
+                           "September" = unemployment_low$Setembre,
+                           "October" = unemployment_low$Octubre,
+                           "November" = unemployment_low$Novembre,
+                           "December" = unemployment_low$Desembre)
 
     
-    data = as.numeric(as.character(sub("," , ".",switch_month)))
+
+    data_high = as.numeric(as.character(sub("," , ".",switch_month_high)))
+    print("Data high:", data_high)
+    
+    data_low = as.numeric(as.character(sub("," , ".",switch_month_low)))
+    print("Data low:",data_low)
+    
+    data = data_high - data_low
+    
+    #print("Data:", data)
+    
+    pal <- colorBin("BrBG", domain = data, bins = bins)
     
     #Create variable for the labels, shown when hovering over the different Neighbourhoods
     labels <- sprintf(
