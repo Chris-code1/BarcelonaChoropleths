@@ -1,5 +1,5 @@
 #set working directory
-#setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
+setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
 
 # load necessary packages
 library(geojsonio)
