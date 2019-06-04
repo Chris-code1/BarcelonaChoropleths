@@ -1,5 +1,5 @@
 #set working directory
-#setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
+setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
 
 # load necessary packages
 library(geojsonio)
@@ -22,11 +22,11 @@ unemployment <- unemployment_2012
 
 str(unemployment)
 
-population_2012 <- read_csv("Data/Barcelona_ population/2012_padro_edat_any_a_any_per_sexe.csv")
-population_2013 <- read_csv("Data/Barcelona_ population/2013_padro_edat_any_a_any_per_sexe.csv")
-population_2014 <- read_csv("Data/Barcelona_ population/2014_padro_edat_any_a_any_per_sexe.csv")
-population_2015 <- read_csv("Data/Barcelona_ population/2015_padro_edat_any_a_any_per_sexe.csv")
-population_2016 <- read_csv("Data/Barcelona_ population/2016_padro_edat_any_a_any_per_sexe.csv")
+population_2012 <- read.csv("Data/Barcelona_ population/2012_padro_edat_any_a_any_per_sexe.csv")
+population_2013 <- read.csv("Data/Barcelona_ population/2013_padro_edat_any_a_any_per_sexe.csv")
+population_2014 <- read.csv("Data/Barcelona_ population/2014_padro_edat_any_a_any_per_sexe.csv")
+population_2015 <- read.csv("Data/Barcelona_ population/2015_padro_edat_any_a_any_per_sexe.csv")
+population_2016 <- read.csv("Data/Barcelona_ population/2016_padro_edat_any_a_any_per_sexe.csv")
 
 population <- population_2012
 
