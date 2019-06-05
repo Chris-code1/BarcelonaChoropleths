@@ -7,16 +7,24 @@ library(leaflet)
 library(plotly)
 library(tidyr)
 library(RColorBrewer)
+library(dbplyr)
 
 
 unemployment_2012 <- read.csv("Data/Barcelona_unemployment/2012_unemployment.csv", sep=",")
 unemployment_2016 <- read.csv("Data/Barcelona_unemployment/2014_unemployment.csv", sep=",")
 
-data_2012 = as.numeric(as.character(sub("," , ".",unemployment_2012$Gener)))
-data_2016 = as.numeric(as.character(sub("," , ".",unemployment_2016$Desembre)))
+data = as.numeric(as.character(sub("," , ".",unemployment_2012$Gener)))
 
-data <- data_2016 - data_2012
 
+newdata <-    population %>% 
+                group_by(population$Codi_Barri) %>% 
+                summarise(Nombre = sum(Nombre)) %>%
+                mutate(Nombre = cut(poplation, 1,73))
+
+
+print(newdata)
+
+newdata = as.numeric(as.character(sub("," , ".",newdata$Nombre)))
 #load in Data
 #unemployment <- read.csv("Data/Barcelona_unemployment/2016_unemployment.csv", sep=",")
 
@@ -39,8 +47,8 @@ names(geojson_bracelona)
 #geojson_bracelona $ N_Barri
 
 
-bins <- c( -2, -1.5, -1, -0.5,  0, 0.5, 1, 1.5, 2)
-pal <- colorBin("BrBG", domain = data, bins = bins)
+bins <- c( 0, 10000, 20000, 30000, 40000 , 50000, 60000 , 70000 , Inf )
+pal <- colorBin("YlOrRd", domain = data, bins = bins)
 
 
 
@@ -64,7 +72,7 @@ labels <- sprintf(
 m %>% addPolygons(  
   
   #fill of tiles depending on bins and population density
-  fillColor = ~pal(data),
+  fillColor = ~pal(newdata),
   
   #creates the dashed line in between the districts
   

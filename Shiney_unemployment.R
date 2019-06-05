@@ -202,8 +202,11 @@ server <- function(input, output, session) {
     
     #Create variable for the labels, shown when hovering over the different Neighbourhoods
     labels <- sprintf(
-      "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Number of unemployed: </strong> %g",
-      geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
+      "<strong>Name of Hood: </strong> %s 
+      <br/> <strong>Name of District: </strong> %s 
+      <br/> <strong>Population 16 - 64 years: </strong> %g
+      <br/> <strong>Number of unemployed: </strong> %g",
+      geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, unemployment$Poblaciï...16.64.anys, data
     ) %>% lapply(htmltools::HTML)
     
     print("LOG: loading of labels done")
@@ -259,7 +262,7 @@ server <- function(input, output, session) {
       #adds the legend in the right hand corner
       
       addLegend(pal = pal, values = unemployment$Gener, opacity = 0.7, title = NULL,
-                position = "bottomright")
+                position = "topright")
   
   })
   
