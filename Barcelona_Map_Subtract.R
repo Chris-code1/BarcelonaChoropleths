@@ -8,18 +8,31 @@ library(plotly)
 library(tidyr)
 library(RColorBrewer)
 library(dbplyr)
+library(roperators)
 
 
 unemployment_2012 <- read.csv("Data/Barcelona_unemployment/2012_unemployment.csv", sep=",")
 unemployment_2016 <- read.csv("Data/Barcelona_unemployment/2014_unemployment.csv", sep=",")
 
+population <- read.csv("Data/Barcelona_ population/2016_padro_edat_any_a_any_per_sexe.csv")
+
+
 data = as.numeric(as.character(sub("," , ".",unemployment_2012$Gener)))
+
+
+as.numeric(population$Edat.any.a.any %-=% '[a-z,Ã©]')
+population <- filter(population, Edat.any.a.any  > 18 )
+population <- filter(population, Edat.any.a.any  < 65 )
+
 
 
 newdata <-    population %>% 
                 group_by(population$Codi_Barri) %>% 
-                summarise(Nombre = sum(Nombre)) %>%
-                mutate(Nombre = cut(poplation, 1,73))
+                filter(Sexe == "Dona") %>%
+                #population$age <- as.numeric(population$Edat.any.a.any %-=% '[a-z,Ã©]') %>%
+                #between(age, 10, 15) %>%
+                summarise(Nombre = sum(Nombre)) 
+
 
 
 print(newdata)
@@ -47,7 +60,7 @@ names(geojson_bracelona)
 #geojson_bracelona $ N_Barri
 
 
-bins <- c( 0, 10000, 20000, 30000, 40000 , 50000, 60000 , 70000 , Inf )
+bins <- c( 0, 10000, 20000, 30000, 40000 , 50000, 60000 , Inf )
 pal <- colorBin("YlOrRd", domain = data, bins = bins)
 
 
@@ -62,8 +75,8 @@ m <- leaflet(geojson_bracelona) %>%
 
 #Create variable for the labels, shown when hovering over the different Neighbourhoods
 labels <- sprintf(
-  "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Number of unemployed: </strong> %g",
-  geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
+  "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Number of population: </strong> %g",
+  geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, newdata[c(1:73)]
 ) %>% lapply(htmltools::HTML)
 
 
