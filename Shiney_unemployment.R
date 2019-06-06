@@ -43,6 +43,12 @@ deathsAll_2 <- read_csv("Data/Barcelona_deaths/All_version_2.csv")
 
 str(deathsAll_2)
 
+accidents_2015 <- read.csv("Data/Barcelona_ population/2012_padro_edat_any_a_any_per_sexe.csv")
+accidents_2016 <- read.csv("Data/Barcelona_ population/2012_padro_edat_any_a_any_per_sexe.csv")
+accidents_2017 <- read.csv("Data/Barcelona_ population/2012_padro_edat_any_a_any_per_sexe.csv")
+
+accidents <- accidents_2016
+
 ui <- dashboardPage(
   dashboardHeader(title = "Barcelona"),
   dashboardSidebar(
@@ -615,7 +621,41 @@ server <- function(input, output, session) {
     labs(x="District", y="Value", fill="Age", title="Deaths by district and age group") +
     scale_fill_brewer(palette = "Set1")
 })
+  print("LOG: loading of deaths done")
   
+  # output$victims_graph <- renderPlot({
+    # # Victims by district
+    # accidents %>%
+    #   group_by(Nom_districte, Descripcio_torn) %>%
+    #   #summarise(Victims=sum(Numero_victimes)) %>%
+    #   #filter(Nom_districte!="Unknown") %>%
+    #   ggplot(aes(x=reorder(Nom_districte, Numero_victimes, sum), y=Numero_victimes, fill=Descripcio_torn)) + 
+    #   geom_col(position=position_stack(reverse=FALSE),  colour="black") +
+    #   geom_text(aes(label=Numero_victimes, group=Descripcio_torn), position=position_stack(vjust=0.5)) +
+    #   scale_fill_manual(values=c("sienna1", "darkolivegreen1", "slateblue1")) +
+    #   labs(x="District name", y="Victims", title="Victims by district (2016)") +
+    #   theme_bw() +
+    #   theme(legend.position="bottom",
+    #         legend.title=element_blank()) +
+    #   coord_flip()
+    # 
+    # Accidents by weekday (2017)
+#     accidents %>%
+#       count(Descripcio_dia_setmana, Descripcio_torn) %>% 
+#       mutate(Descripcio_dia_setmana=factor(Descripcio_dia_setmana, levels=c("diumenge", "dissabte", "divendres", "dijous",
+#                                                                                   "dimecres", "dimarts", "dilluns"))) %>%
+#       ggplot(aes(x=Descripcio_dia_setmana, y=n, fill=Descripcio_torn)) + 
+#       geom_col(position=position_stack(reverse=FALSE),  colour="black") +
+#       geom_text(aes(label=n, group=Descripcio_torn), position=position_stack(vjust=0.5)) +
+#       scale_fill_manual(values=c("sienna1", "darkolivegreen1", "slateblue1")) +
+#       labs(x="Weekday", y="Accidents", title="Accidents by weekday (2017)") +
+#       theme_bw() +
+#       theme(legend.position="bottom",
+#             legend.title=element_blank()) +
+#       coord_flip()
+#     
+#     
+# })
 }
       
 

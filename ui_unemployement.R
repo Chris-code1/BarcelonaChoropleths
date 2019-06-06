@@ -127,6 +127,12 @@ dashboardBody(
             plotOutput(outputId = "deaths_graph", height = 430) 
         )
       )
+      # ),
+      # fluidRow(
+      #   box(title = "Victims by district", width = 12,height = 600, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+      #       plotOutput(outputId = "vicitms_graph", height = 530) 
+      #   )
+      # )
     )
   )
 )
