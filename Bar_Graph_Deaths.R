@@ -3,12 +3,20 @@ library(shiny)
 library(tidyverse)
 library(knitr)
 library(scales)
+library(ggplot2)
 
 # Read the data
-deathsAll <- read.csv("Data/All_defuncions_edats-quinquennals.csv", sep=",", fileEncoding="UTF-8")
-deaths2017 <- read.csv("Data/2017_defuncions_edats-quinquennals.csv", sep=",", fileEncoding="UTF-8")
-deaths2016 <- read.csv("Data/2016_defuncions_edats-quinquennals.csv", sep=",", fileEncoding="UTF-8")
-deaths2015 <- read.csv("Data/2015_defuncions_edats-quinquennals.csv", sep=",", fileEncoding="UTF-8")
+deathsAll <- read.csv("Data/Barcelona_deaths/All_defuncions_edats-quinquennals.csv", sep=",", fileEncoding="UTF-8")
+deaths2017 <- read.csv("Data/Barcelona_deaths/2017_defuncions_edats-quinquennals.csv", sep=",", fileEncoding="UTF-8")
+deaths2016 <- read.csv("Data/Barcelona_deaths/2016_defuncions_edats-quinquennals.csv", sep=",", fileEncoding="UTF-8")
+deaths2015 <- read.csv("Data/Barcelona_deaths/2015_defuncions_edats-quinquennals.csv", sep=",", fileEncoding="UTF-8")
+
+deathsAll_2 <- read_csv("Data/Barcelona_deaths/All_version_2.csv")
+
+life_expectancy_male <- read.csv("Data/Barcelona_lifeExpectancy/life_expectancy_male.csv", sep=",", fileEncoding="UTF-8")
+life_expectancy_female <- read.csv("Data/Barcelona_lifeExpectancy/life_expectancy_female.csv", sep=",", fileEncoding="UTF-8")
+life_expectancy <- life_expectancy_male
+colnames(life_expectancy)[2:6] <- c("2006-2010", "2007-2011", "2008-2012", "2009-2013", "2010-2014")
 
 ui <- fluidPage(
   titlePanel("Deaths by age"),
@@ -19,12 +27,20 @@ ui <- fluidPage(
       
       sliderInput("range", 
                   label = "Range of interest:",
-                  min = 2015, max = 2017, value = c(2015))
+                  min = 2015, max = 2017, value = c(2015)),
+     
+       radioButtons("radio", 
+                   label = h3("Relative / Absolute"),
+                   choices = list("Relative" = "fill", "Absolute" = "stack"), 
+                   selected = "fill")
     ),
     
+    
     mainPanel(
+      plotOutput("ggplot3", height = 400),
       plotOutput("ggplot1",height = 400),
-      plotOutput("ggplot2",height = 400))
+      plotOutput("ggplot2",height = 400),
+      plotOutput("lifeExpectancy",height = 400))
   )
 )
 # Define server logic ----
@@ -66,6 +82,31 @@ server <- function(input, output) {
       coord_flip() +
       theme_bw() 
   })
+  
+  output$ggplot3 <- renderPlot({
+    deathsAll %>% 
+      filter(Any==input$range[1]) %>%
+      ggplot(aes(x = Nom_Districte, y = Nombre, fill = Edat_quinquennal)) + geom_col(position=input$radio) +
+      labs(x="District", y="Value", fill="Age", title="Deaths by district and age group")
+  })
+  
+# output$lifeExpectancy <- renderPlot({
+#   # Life expectancy over the years
+#   life_expectancy %>%
+#     na.omit %>%
+#     group_by(Dte.) %>%
+#     summarise(`2006-2010`=mean(`2006-2010`),
+#               `2007-2011`=mean(`2007-2011`),
+#               `2008-2012`=mean(`2008-2012`),
+#               `2009-2013`=mean(`2009-2013`),
+#               `2010-2014`=mean(`2010-2014`)) %>%
+#     gather(Years, `Life Expectancy`, 2:6) %>%
+#     ggplot(aes(x=Years, y=`Life Expectancy`, group=Dte.)) +
+#     geom_line(aes(colour=Dte.), size=1) +
+#     geom_point(aes(colour=Dte.), size=1) +
+#     theme_bw() +
+#     labs(title="Life expectancy over the years")
+# })
 }
 
 # Run the app ----

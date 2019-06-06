@@ -10,6 +10,7 @@ library(shiny)
 library(knitr)
 library(scales)
 library(shinydashboard)
+library(ggplot2)
 
 source("helpers.R")
 
@@ -34,13 +35,21 @@ population <- population_2012
 
 str(population)
 
+deathsAll <- read.csv("Data/Barcelona_deaths/All_defuncions_edats-quinquennals.csv", sep=",", fileEncoding="UTF-8")
+
+str(deathsAll)
+
+deathsAll_2 <- read_csv("Data/Barcelona_deaths/All_version_2.csv")
+
+str(deathsAll_2)
 
 ui <- dashboardPage(
   dashboardHeader(title = "Barcelona"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("Unemployment", tabName = "unemployment", icon = icon("dashboard")),
-      menuItem("Unemployment comparison", tabName = "unemployment_comparison", icon = icon("dashboard"))
+      menuItem("Unemployment comparison", tabName = "unemployment_comparison", icon = icon("dashboard")),
+      menuItem("Deaths", tabName = "deaths_districts", icon = icon("dashboard"))
     )
   ),
   source("ui_unemployement.R", local = TRUE)$value
@@ -60,9 +69,15 @@ server <- function(input, output, session) {
                            "2015" = population_2015,
                            "2016" = population_2016)
     
+    if (is.null(input$m_shape_click$id)) {
+      Barris <- "el Raval"
+    } else {
+      Barris <- input$m_shape_click$id
+    }
+    
     # Population by year
     population %>%
-      filter(Codi_Barri==input$m_shape_click$id) %>%
+      filter(Nom_Barri==Barris) %>%
       group_by(Sexe) %>%
       summarise(count=sum(Nombre)) %>%
       mutate(percent=paste0(round((count/sum(count))*100, 2), "%")) %>%
@@ -70,7 +85,7 @@ server <- function(input, output, session) {
       geom_bar(stat="identity", aes(fill=Sexe)) +
       geom_text(aes(label=percent, group=Sexe), position=position_stack(vjust=0.5)) +
       scale_y_continuous(labels=comma) +
-      labs(x="Barri", y="Population", title=paste("Year",input$var_year)) +
+      labs(x=Barris, y="Population", title=paste("Year",input$var_year)) +
       theme_bw()
   })
   
@@ -230,7 +245,6 @@ server <- function(input, output, session) {
     
     #Create click listener
     observeEvent(input$m_shape_click,{
-      print("LOG: clicked!")
       print(input$m_shape_click$id)
     })
     
@@ -245,8 +259,7 @@ server <- function(input, output, session) {
       color = "white",
       dashArray = "3",
       fillOpacity = 0.7,
-      #popup = popup1,
-      layerId = unemployment$Codi_Barri,
+      layerId = unemployment$Barris,
       
       #defines the properties of the highlightingline when hovering over the different neighbourhoods
       highlight = highlightOptions(
@@ -282,9 +295,15 @@ server <- function(input, output, session) {
                          "2015" = population_2015,
                          "2016" = population_2016)
     
+    if (is.null(input$m2_shape_click$id)) {
+      Barris <- "el Raval"
+    } else {
+      Barris <- input$m2_shape_click$id
+    }
+    
     # Population by year
     population %>%
-      filter(Codi_Barri==input$m2_shape_click$id) %>%
+      filter(Nom_Barri==Barris) %>%
       group_by(Sexe) %>%
       summarise(count=sum(Nombre)) %>%
       mutate(percent=paste0(round((count/sum(count))*100, 2), "%")) %>%
@@ -292,7 +311,7 @@ server <- function(input, output, session) {
       geom_bar(stat="identity", aes(fill=Sexe)) +
       geom_text(aes(label=percent, group=Sexe), position=position_stack(vjust=0.5)) +
       scale_y_continuous(labels=comma) +
-      labs(x="Barri", y="Population", title=paste("Year",input$var_year2)) +
+      labs(x=Barris, y="Population", title=paste("Year",input$var_year2)) +
       theme_bw()
   })
   
@@ -532,7 +551,6 @@ server <- function(input, output, session) {
     
     #Create click listener
     observeEvent(input$m_shape_click,{
-      print("LOG: clicked!")
       print(input$m_shape_click$id)
     })
     
@@ -547,8 +565,7 @@ server <- function(input, output, session) {
       color = "white",
       dashArray = "3",
       fillOpacity = 0.7,
-      #popup = popup1,
-      layerId = unemployment$Codi_Barri,
+      layerId = unemployment$Barris,
       
       #defines the properties of the highlightingline when hovering over the different neighbourhoods
       highlight = highlightOptions(
@@ -572,8 +589,34 @@ server <- function(input, output, session) {
                 position = "topright")
     
   })
+ 
+  ########################################## Tab 3 #############################################
+  ################# Stacked bar graph
+ 
+  # deathsAll$Edat_quinquennal <- ordered(deathsAll$Edat_quinquennal, levels=c("0-4 anys", "5-9 anys", "10-14 anys", "15-19 anys",
+  #                                                                            "20-24 anys", "25-29 anys", "30-34 anys", "35-39 anys",
+  #                                                                            "40-44 anys", "45-49 anys", "50-54 anys", "55-59 anys",
+  #                                                                            "60-64 anys", "65-69 anys", "70-74 anys", "75-79 anys",
+  #                                                                            "80-84 anys", "85-89 anys", "90-94 anys", "95-99 anys"))
   
-  }
+  deathsAll_2$Edat_quinquennal <- ordered(deathsAll_2$Edat_quinquennal, levels=c("0-19 anys", "20-39 anys", "40-59 anys", "60-79 anys", "80-99 anys"))
+  
+  output$deaths_graph <- renderPlot({
+  
+  #   deathsAll %>% 
+  #     filter(Any==input$var_year3) %>%
+  #     ggplot(aes(x = Nom_Districte, y = Nombre, fill = Edat_quinquennal)) + geom_col(position=input$radio) +
+  #     labs(x="District", y="Value", fill="Age", title="Deaths by district and age group")
+  # })
+  
+  deathsAll_2 %>% 
+    filter(Any==input$var_year3) %>%
+    ggplot(aes(x = Nom_Districte, y = Nombre, fill = Edat_quinquennal)) + geom_col(position=input$radio) +
+    labs(x="District", y="Value", fill="Age", title="Deaths by district and age group") +
+    scale_fill_brewer(palette = "Set1")
+})
+  
+}
       
 
 shinyApp(ui, server)

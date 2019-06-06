@@ -106,6 +106,27 @@ dashboardBody(
                   leafletOutput(outputId = "m2", height = 700)
               )
             )
+    ),
+    
+    tabItem(tabName = "deaths_districts",
+            fluidRow(
+              box(title = "Select Year and/or Month", width = 3,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                  selectInput("var_year3",
+                              label = "Choose a year",
+                              choices = c("2015",
+                                          "2016",
+                                          "2017"),
+                              selected = "2015"),
+                  
+                  radioButtons("radio",
+                               label = h3("Relative / Absolute"),
+                               choices = list("Relative" = "fill", "Absolute" = "stack"),
+                               selected = "fill")
+        ),
+        box(title = "Deaths per district per age group", width = 9,height = 500, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+            plotOutput(outputId = "deaths_graph", height = 430) 
+        )
+      )
     )
   )
 )
