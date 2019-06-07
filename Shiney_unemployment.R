@@ -539,7 +539,7 @@ server <- function(input, output, session) {
     labels <- sprintf(
       "<strong>Neighbourhood: </strong> %s 
       <br/> <strong>District: </strong> %s 
-      <br/> <strong>Percent of unemployed: </strong> %g",
+      <br/> <strong>Difference in percent of unemployed: </strong> %g",
       geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
     ) %>% lapply(htmltools::HTML)
     
