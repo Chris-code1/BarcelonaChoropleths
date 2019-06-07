@@ -1,5 +1,5 @@
 #set working directory
-#setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
+setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
 
 # load necessary packages
 library(geojsonio)
@@ -39,7 +39,7 @@ deathsAll <- read.csv("Data/Barcelona_deaths/All_defuncions_edats-quinquennals.c
 
 str(deathsAll)
 
-deathsAll_2 <- read_csv("Data/Barcelona_deaths/All_version_2.csv")
+deathsAll_2 <- read.csv("Data/Barcelona_deaths/All_version_2.csv")
 
 str(deathsAll_2)
 
