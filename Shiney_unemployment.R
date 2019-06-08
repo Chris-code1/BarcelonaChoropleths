@@ -1,5 +1,5 @@
 #set working directory
-#setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
+setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
 
 # load necessary packages
 library(geojsonio)
@@ -223,16 +223,16 @@ server <- function(input, output, session) {
     
     #Create variable for the labels, shown when hovering over the different Neighbourhoods
     labels <- sprintf(
-      "<strong>Name of Hood: </strong> %s 
-      <br/> <strong>Name of District: </strong> %s
-      <br/> <strong>Number of unemployed: </strong> %g",
-      geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
+      #"<strong>Name of Hood: </strong> %s 
+      #<br/> <strong>Name of District: </strong> %s
+      #<br/> <strong>Number of unemployed: </strong> %g",
+      #geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
       
-      # "<strong>Name of Hood: </strong> %s
-      # <br/> <strong>Name of District: </strong> %s
-      # <br/> <strong>Population 16 - 64 years: </strong> %g
-      # <br/> <strong>Number of unemployed: </strong> %g",
-      # geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, unemployment$Poblaciï...16.64.anys, data
+      "<strong>Neighbourhood: </strong> %s
+      <br/> <strong>District: </strong> %s
+      <br/> <strong>Population 16 - 64 years: </strong> %g
+      <br/> <strong>Percent of unemployed: </strong> %g",
+      geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, unemployment$Poblacio.16.64.anys, data
     ) %>% lapply(htmltools::HTML)
     
     print("LOG: loading of labels done")
@@ -537,7 +537,9 @@ server <- function(input, output, session) {
     
     #Create variable for the labels, shown when hovering over the different Neighbourhoods
     labels <- sprintf(
-      "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Number of unemployed: </strong> %g",
+      "<strong>Neighbourhood: </strong> %s 
+      <br/> <strong>District: </strong> %s 
+      <br/> <strong>Difference in percent of unemployed: </strong> %g",
       geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
     ) %>% lapply(htmltools::HTML)
     
