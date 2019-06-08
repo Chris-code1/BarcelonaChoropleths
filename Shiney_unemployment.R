@@ -223,10 +223,6 @@ server <- function(input, output, session) {
     
     #Create variable for the labels, shown when hovering over the different Neighbourhoods
     labels <- sprintf(
-      #"<strong>Name of Hood: </strong> %s 
-      #<br/> <strong>Name of District: </strong> %s
-      #<br/> <strong>Number of unemployed: </strong> %g",
-      #geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, data
       
       "<strong>Neighbourhood: </strong> %s
       <br/> <strong>District: </strong> %s
