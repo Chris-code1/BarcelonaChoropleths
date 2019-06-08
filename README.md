@@ -25,3 +25,7 @@ https://rstudio.github.io/leaflet/choropleths.html
 Tutorial Leaflet library in R:
 
 https://rstudio.github.io/leaflet/map_widget.html
+
+Report:
+
+https://upm365-my.sharepoint.com/:w:/g/personal/n_dikken_alumnos_upm_es/EdhXw3IfeiNOgsB8qsiAXdoBmnsEhHDmUsY1u1QBbBCePQ?e=9An5se
