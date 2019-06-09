@@ -289,7 +289,7 @@ server <- function(input, output, session) {
       #adds the legend in the right hand corner
       
       addLegend(pal = pal, values = unemployment$Gener, opacity = 0.7, title = NULL,
-                position = "topright")
+                position = "bottomright")
   
   })
   
@@ -625,7 +625,7 @@ server <- function(input, output, session) {
       #adds the legend in the right hand corner
       
       addLegend(pal = pal, values = unemployment$Gener, opacity = 0.7, title = NULL,
-                position = "topright")
+                position = "bottomright")
     
   })
  
@@ -671,6 +671,12 @@ server <- function(input, output, session) {
   ################Map################
   
   output$m5 <- renderLeaflet({
+    
+    #Create click listener
+    observeEvent(input$m5_shape_click,{
+      print(input$m5_shape_click$id)
+    })
+    
     
     print("go in renderLeaflet")
     
@@ -750,11 +756,7 @@ server <- function(input, output, session) {
         id = "mapbox.light",
         accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN')))
     
-    #Create click listener
-    observeEvent(input$m5_shape_click,{
-      print(input$m5_shape_click$id)
-    })
-    
+
     
     #Create variable for the labels, shown when hovering over the different Neighbourhoods
     labels <- sprintf(
@@ -797,7 +799,7 @@ server <- function(input, output, session) {
       #adds the legend in the right hand corner
       
       addLegend(pal = pal, values = data, opacity = 0.7, title = NULL,
-                position = "topright")
+                position = "bottomright")
     
   })
   
