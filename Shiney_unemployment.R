@@ -11,6 +11,8 @@ library(knitr)
 library(scales)
 library(shinydashboard)
 library(ggplot2)
+library(dbplyr)
+library(roperators)
 
 source("helpers.R")
 
@@ -55,6 +57,7 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Unemployment", tabName = "unemployment", icon = icon("dashboard")),
       menuItem("Unemployment comparison", tabName = "unemployment_comparison", icon = icon("dashboard")),
+      menuItem("Population", tabName = "population", icon = icon("dashboard")),
       menuItem("Deaths", tabName = "deaths_districts", icon = icon("dashboard"))
     )
   ),
@@ -97,7 +100,7 @@ server <- function(input, output, session) {
   
   #########Bar Chart 2
   
-  output$barCentile <- renderPlotly({
+  output$barCentile6 <- renderPlotly({
 
     unemployment <- switch(input$var_year,
                            "2012" = unemployment_2012,
@@ -143,7 +146,11 @@ server <- function(input, output, session) {
                        type = "bar",
                        name = "unemployment rate") %>%
 
-      layout(yaxis = list(title = 'Neighbourhood'), xaxis = list(title = 'Amount of unemployed in percent'))
+      layout(title = input$var_year,
+             yaxis = list(title = 'Neighbourhood'), 
+             xaxis = list(title = 'Unemployed in percent'))
+    
+
 
   })
   
@@ -319,35 +326,67 @@ server <- function(input, output, session) {
   
   #########Bar Chart 2
   
-  output$barCentile <- renderPlotly({
+  output$barCentile_comp <- renderPlotly({
     
-    unemployment <- switch(input$var_year2,
-                           "2012" = unemployment_2012,
-                           "2013" = unemployment_2013,
-                           "2014" = unemployment_2014,
-                           "2015" = unemployment_2015,
-                           "2016" = unemployment_2016)
+    #sets the year
+    
+    unemployment_high <- switch(input$var_year2, 
+                                "2012" = unemployment_2012,
+                                "2013" = unemployment_2013,
+                                "2014" = unemployment_2014,
+                                "2015" = unemployment_2015,
+                                "2016" = unemployment_2016)
+    
+    #sets the month, based on the year selected
+    
+    switch_month_high <- switch(input$var2, 
+                                "January" = unemployment_high$Gener,
+                                "February" = unemployment_high$Febrer,
+                                "March" = unemployment_high$Agost,
+                                "April" = unemployment_high$Abril,
+                                "May" = unemployment_high$Maig,
+                                "June" = unemployment_high$Juny,
+                                "July" = unemployment_high$Juliol,
+                                "August" = unemployment_high$Agost,
+                                "September" = unemployment_high$Setembre,
+                                "October" = unemployment_high$Octubre,
+                                "November" = unemployment_high$Novembre,
+                                "December" = unemployment_high$Desembre)
+    
+    #sets the year
+    
+    unemployment_low <- switch(input$var_year_comp, 
+                               "2012" = unemployment_2012,
+                               "2013" = unemployment_2013,
+                               "2014" = unemployment_2014,
+                               "2015" = unemployment_2015,
+                               "2016" = unemployment_2016)
+    
+    #sets the month, based on the year selected
+    
+    switch_month_low <- switch(input$var_month_comp, 
+                               "January" = unemployment_low$Gener,
+                               "February" = unemployment_low$Febrer,
+                               "March" = unemployment_low$Gener,
+                               "April" = unemployment_low$Abril,
+                               "May" = unemployment_low$Maig,
+                               "June" = unemployment_low$Juny,
+                               "July" = unemployment_low$Juliol,
+                               "August" = unemployment_low$Agost,
+                               "September" = unemployment_low$Setembre,
+                               "October" = unemployment_low$Octubre,
+                               "November" = unemployment_low$Novembre,
+                               "December" = unemployment_low$Desembre)
     
     
     
-    switch_month <- switch(input$var2,
-                           "January" = unemployment$Gener,
-                           "February" = unemployment$Febrer,
-                           "March" = unemployment$Gener,
-                           "April" = unemployment$Abril,
-                           "May" = unemployment$Maig,
-                           "June" = unemployment$Juny,
-                           "July" = unemployment$Juliol,
-                           "August" = unemployment$Agost,
-                           "September" = unemployment$Setembre,
-                           "October" = unemployment$Octubre,
-                           "November" = unemployment$Novembre,
-                           "December" = unemployment$Desembre)
+    data_high = as.numeric(as.character(sub("," , ".",switch_month_high)))
+    print("Data high:", data_high)
     
+    data_low = as.numeric(as.character(sub("," , ".",switch_month_low)))
+    print("Data low:",data_low)
     
-    
-    
-    data = as.numeric(as.character(sub("," , ".",switch_month)))
+    data = data_high - data_low
     
     ## create Dataframe for the barchart
     
@@ -365,7 +404,8 @@ server <- function(input, output, session) {
                        type = "bar",
                        name = "unemployment rate") %>%
       
-      layout(yaxis = list(title = 'Neighbourhood'), xaxis = list(title = 'Amount of unemployed in percent'))
+      layout(yaxis = list(title = 'Neighbourhood'), 
+             xaxis = list(title = 'Amount of unemployed in percent'))
     
   })
   
@@ -426,12 +466,7 @@ server <- function(input, output, session) {
     # Calculate mean
     meanunemployment <- data_long %>% group_by(key) %>% summarise(mean = mean(value))
     meanunemployment_comp <- data_long_comp %>% group_by(key) %>% summarise(mean_comp = mean(value))
-    
-    #subtract one from another to get the comparison
-    
-    #mean = as.numeric(as.character(sub("," , ".",meanunemployment$mean))) - as.numeric(as.character(sub("," , ".",meanunemployment_comp$mean)))
-    
-    #meanunemployment_sub_df <- data.frame(mean)
+  
     
     
     # Add array with month names
@@ -454,7 +489,7 @@ server <- function(input, output, session) {
       add_trace(y = ~mean_comp, name = input$var_year_comp, mode = 'lines+markers') %>%
       
       
-      layout(title = paste("Mean unemployment of Barcelona"),
+      layout(
              yaxis = list(title = 'Unemployed in %'), 
              xaxis = list(title = 'Month'))
   })
@@ -594,6 +629,178 @@ server <- function(input, output, session) {
     
   })
  
+  ########################################## Tab 4 Population #############################################
+  #########Bar Chart 1
+  #########Bar Chart 1
+  output$barPopulation5 <- renderPlotly({
+    
+    population <- switch(input$var_year5, 
+                         "2012" = population_2012,
+                         "2013" = population_2013,
+                         "2014" = population_2014,
+                         "2015" = population_2015,
+                         "2016" = population_2016)
+    
+    if (is.null(input$m5_shape_click$id)) {
+      Barris <- "el Raval"
+    } else {
+      Barris <- input$m5_shape_click$id
+    }
+    
+    # Population by year
+    population %>%
+      filter(Nom_Barri==Barris) %>%
+      group_by(Sexe) %>%
+      summarise(count=sum(Nombre)) %>%
+      mutate(percent=paste0(round((count/sum(count))*100, 2), "%")) %>%
+      ggplot(aes(x="Barri", y=count)) +
+      geom_bar(stat="identity", aes(fill=Sexe)) +
+      geom_text(aes(label=percent, group=Sexe), position=position_stack(vjust=0.5)) +
+      scale_y_continuous(labels=comma) +
+      labs(x=Barris, y="Population", title=paste("Year",input$var_year5)) +
+      theme_bw()
+  })
+  
+  #########Bar Chart 2
+  
+  
+  #########Line Chart
+  
+  
+  
+  ################Map################
+  
+  output$m5 <- renderLeaflet({
+    
+    print("go in renderLeaflet")
+    
+    #sets the year
+    
+    population <- switch(input$var_year5, 
+                         "2012" = population_2012,
+                         "2013" = population_2013,
+                         "2014" = population_2014,
+                         "2015" = population_2015,
+                         "2016" = population_2016)
+    
+    
+    print("go in ifelse function")
+    if (input$gender_male == FALSE) {
+      fil <- c("Dona")
+      print("Male selected")
+      
+    } else if (input$gender_female == FALSE) {
+      fil <- c("Home")
+      print("Female selected")
+    } else
+      fil <- c("Home", "Dona")
+    print("All selected")
+    
+    
+    population <- population[population$Sexe %in% fil, ]
+    
+    
+    as.numeric(population$Edat.any.a.any %-=% '[a-z,Ã©]')
+    population <- filter(population, Edat.any.a.any  > input$range[1])
+    population <- filter(population, Edat.any.a.any  < input$range[2] )
+    
+    
+    newdata <-    population %>% 
+      group_by(population$Codi_Barri) %>% 
+      #filter(Sexe == switch_gender) %>%
+      summarise(Nombre = sum(Nombre)) 
+    
+    
+    
+    print(newdata)
+    
+    newdata = as.numeric(as.character(sub("," , ".",newdata$Nombre)))
+    
+    
+    str(data)
+    
+    
+    # transfrom .json file into a spatial polygons data frame
+    geojson_bracelona <- 
+      geojson_read( 
+        x = "https://cdn.rawgit.com/martgnz/bcn-geodata/master/barris/barris_geo.json"
+        , what = "sp"
+      )
+    
+    
+    # check the class of the object
+    class( geojson_bracelona )
+    names(geojson_bracelona)
+    
+    
+    #### Create automatic custom bins
+    
+    newbin = ceiling(max(newdata)/6)
+    
+    for (i in 0:6) {
+      bins[i+1] <- newbin * i
+    }
+    
+    #bins <- c( 0, 10000, 20000, 30000, 40000 , 50000, 60000 , Inf )
+    
+    pal <- colorBin("Blues", domain = data, bins = bins)
+    
+    m5 <- leaflet(geojson_bracelona) %>%
+      addProviderTiles("MapBox", options = providerTileOptions(
+        id = "mapbox.light",
+        accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN')))
+    
+    #Create click listener
+    observeEvent(input$m5_shape_click,{
+      print(input$m5_shape_click$id)
+    })
+    
+    
+    #Create variable for the labels, shown when hovering over the different Neighbourhoods
+    labels <- sprintf(
+      "<strong>Name of Hood: </strong> %s <br/> <strong>Name of District: </strong> %s <br/> <strong>Number of population: </strong> %g",
+      geojson_bracelona$N_Barri, geojson_bracelona$N_Distri, newdata[c(1:73)]
+    ) %>% lapply(htmltools::HTML)
+    
+    
+    #add poligons to the map
+    
+    m5 %>% addPolygons(  
+      
+      #fill of tiles depending on bins and population density
+      fillColor = ~pal(newdata),
+      
+      #creates the dashed line in between the districts
+      
+      weight = 2,
+      opacity = 1,
+      color = "white",
+      dashArray = "3",
+      fillOpacity = 0.7,
+      
+      #defines the properties of the highlightingline when hovering over the different neighbourhoods
+      highlight = highlightOptions(
+        weight = 5,
+        color = "#666",
+        dashArray = "",
+        fillOpacity = 0.7,
+        bringToFront = TRUE
+      ),
+      
+      #creates the labels
+      label = labels,
+      labelOptions = labelOptions(
+        style = list("font-weight" = "normal", padding = "3px 8px"),
+        textsize = "15px",
+        direction = "auto")) %>%
+      
+      #adds the legend in the right hand corner
+      
+      addLegend(pal = pal, values = data, opacity = 0.7, title = NULL,
+                position = "topright")
+    
+  })
+  
   ########################################## Tab 3 #############################################
   ################# Stacked bar graph
  

@@ -5,8 +5,8 @@ dashboardBody(
             fluidRow(
               box(title = "Unemployement per year", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
                   plotlyOutput(outputId = "histCentile", height = 230)),
-              box(title = "Gender ratio per district", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
-                  plotlyOutput(outputId = "barPopulation", height = 230)),
+              box(title = "Unemployment per Neighbourhood", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                  plotlyOutput(outputId = "barCentile6", height = 230)),
               box(title = "Select Year and/or Month", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
                   selectInput("var_year", 
                               label = "Choose a year",
@@ -46,8 +46,8 @@ dashboardBody(
             fluidRow(
               box(title = "Unemployement per year", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
                   plotlyOutput(outputId = "histCentile2", height = 230)),
-              box(title = "Gender ratio per district", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
-                  plotlyOutput(outputId = "barPopulation2", height = 230)),
+              box(title = "Difference in unemployment per neighbourhood", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                  plotlyOutput(outputId = "barCentile_comp", height = 230)),
               box(title = "Select Year and/or Month", width = 4,height = 360, solidHeader = TRUE, collapsible = TRUE, status = "primary",
                   selectInput("var_year2", 
                               label = "Choose the year of interest",
@@ -107,6 +107,48 @@ dashboardBody(
               )
             )
     ),
+    
+      # Fourth tab content - population
+      tabItem(tabName = "population",
+              fluidRow(
+                box(title = "Unemployement per year", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                    plotlyOutput(outputId = "histCentile5", height = 230)),
+                box(title = "Gender ratio per district", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                    plotlyOutput(outputId = "barPopulation5", height = 230)),
+                box(title = "Select Year and/or Month", width = 4,height = 350, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                    selectInput("var_year5", 
+                                label = "Choose the year of interest",
+                                choices = c("2012", 
+                                            "2013",
+                                            "2014", 
+                                            "2015",
+                                            "2016"),
+                                selected = "2016"),
+                    
+                    checkboxInput("gender_male", "Male", TRUE),
+                    checkboxInput("gender_female", "Female", TRUE),
+                    
+                    sliderInput("range", "Age:",
+                                min(0), max(99),
+                                value = c(0, 99)
+                                
+                                
+                                
+                                
+                                
+                    ),
+                    print("UI loaded")
+                    
+                    
+                    
+                )
+              ),
+              fluidRow(
+                box(title = "Map of Barcelona", width = 12, height = 800, solidHeader = TRUE, collapsible = TRUE, status = "danger",
+                    leafletOutput(outputId = "m5", height = 700)
+                )
+              )
+      ),
     
     tabItem(tabName = "deaths_districts",
             fluidRow(
