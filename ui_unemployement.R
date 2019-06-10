@@ -46,7 +46,7 @@ dashboardBody(
             fluidRow(
               box(title = "Map of Barcelona", width = 8, height = 800, solidHeader = TRUE, collapsible = TRUE, status = "danger",
                   leafletOutput(outputId = "m2", height = 700)),
-              box(title = "Select Year and/or Month", width = 2,height = 200, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+              box(title = "Select Year and/or Month", width = 2,height = 250, solidHeader = TRUE, collapsible = TRUE, status = "primary",
                   selectInput("var_year2", 
                               label = "Choose the year of interest",
                               choices = c("2012", 
@@ -74,7 +74,7 @@ dashboardBody(
               
               #Stuff to be compared with
               
-              box(title = "Select Year and/or Month", width = 2,height = 200, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+              box(title = "Select Year and/or Month", width = 2,height = 250, solidHeader = TRUE, collapsible = TRUE, status = "primary",
                   selectInput("var_year_comp", 
                               label = "Choose the year to compare with",
                               choices = c("2012", 
@@ -114,8 +114,6 @@ dashboardBody(
                 box(title = "Map of Barcelona", width = 8, height = 800, solidHeader = TRUE, collapsible = TRUE, status = "danger",
                     leafletOutput(outputId = "m5", height = 700)
                 ),
-                box(title = "Gender ratio per district", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
-                    plotlyOutput(outputId = "barPopulation5", height = 230)),
                 box(title = "Select Year and/or Month", width = 4,height = 350, solidHeader = TRUE, collapsible = TRUE, status = "primary",
                     selectInput("var_year5", 
                                 label = "Choose the year of interest",
@@ -133,7 +131,9 @@ dashboardBody(
                                 min(0), max(99),
                                 value = c(0, 99)
                     )
-                )
+                ),
+                box(title = "Gender ratio per district", width = 4,height = 300, solidHeader = TRUE, collapsible = TRUE, status = "primary",
+                    plotlyOutput(outputId = "barPopulation5", height = 230))
               )
       ),
     

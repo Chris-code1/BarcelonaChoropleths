@@ -1,5 +1,5 @@
 #set working directory
-setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
+#setwd("D:/EIT/Git/InfoVis/BarcelonaChoropleths")
 
 # load necessary packages
 library(geojsonio)
@@ -713,7 +713,6 @@ server <- function(input, output, session) {
     
     newdata <-    population %>% 
       group_by(population$Codi_Barri) %>% 
-      #filter(Sexe == switch_gender) %>%
       summarise(Nombre = sum(Nombre)) 
     
     
@@ -749,7 +748,7 @@ server <- function(input, output, session) {
     
     #bins <- c( 0, 10000, 20000, 30000, 40000 , 50000, 60000 , Inf )
     
-    pal <- colorBin("Blues", domain = data, bins = bins)
+    pal <- colorBin("YlOrBr", domain = data, bins = bins)
     
     m5 <- leaflet(geojson_bracelona) %>%
       addProviderTiles("MapBox", options = providerTileOptions(
