@@ -778,6 +778,7 @@ server <- function(input, output, session) {
       color = "white",
       dashArray = "3",
       fillOpacity = 0.7,
+      layerId = unemployment$Barris,
       
       #defines the properties of the highlightingline when hovering over the different neighbourhoods
       highlight = highlightOptions(
